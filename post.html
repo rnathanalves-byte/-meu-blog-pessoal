@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Post</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header>
+  <div class="container">
+    <h1><a href="index.html">Meu Blog</a></h1>
+    <nav>
+      <a href="index.html">Início</a>
+      <a href="admin.html">Admin</a>
+    </nav>
+  </div>
+</header>
+
+<main>
+  <div class="container">
+    <a href="index.html" class="back-link">&larr; Voltar</a>
+    <div id="post"></div>
+  </div>
+</main>
+
+<footer>
+  <div class="container">
+    <p>&copy; <span id="ano"></span> Meu Blog &mdash; Todos os direitos reservados.</p>
+  </div>
+</footer>
+
+<script src="post.js"></script>
+<script>document.getElementById("ano").textContent = new Date().getFullYear();</script>
+</body>
+</html>

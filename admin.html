@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin — Meu Blog</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body class="admin-body">
+
+<!-- LOGIN -->
+<div id="login">
+  <div class="login-card">
+    <h2>Área Restrita</h2>
+    <input type="password" id="senha" placeholder="Senha de acesso" autocomplete="current-password">
+    <button class="btn" style="width:100%;" onclick="verificarSenha()">Entrar</button>
+    <p id="erro-login" style="color:#c0392b; font-size:0.82rem; margin-top:12px; display:none;">
+      Senha incorreta. Tente novamente.
+    </p>
+  </div>
+</div>
+
+<!-- PAINEL -->
+<div id="painel" style="display:none;">
+
+  <header>
+    <div class="container" style="max-width:900px;">
+      <h1><a href="index.html" style="color:inherit; text-decoration:none;">Meu Blog</a></h1>
+      <nav>
+        <a href="index.html">Ver Blog</a>
+        <a href="#" onclick="sair(); return false;">Sair</a>
+      </nav>
+    </div>
+  </header>
+
+  <div class="admin-panel">
+    <h1 id="painel-titulo">Painel do Autor</h1>
+
+    <!-- FORMULÁRIO -->
+    <div class="form-group">
+      <label for="titulo">Título do Post</label>
+      <input type="text" id="titulo" placeholder="Digite o título aqui...">
+    </div>
+
+    <!-- TOOLBAR -->
+    <div class="toolbar">
+      <button onclick="formatar('bold')" title="Negrito"><b>B</b></button>
+      <button onclick="formatar('italic')" title="Itálico"><i>I</i></button>
+      <button onclick="formatar('underline')" title="Sublinhado"><u>U</u></button>
+      <button onclick="formatar('strikeThrough')" title="Tachado"><s>S</s></button>
+      <button onclick="formatar('insertUnorderedList')" title="Lista">&#8226; Lista</button>
+      <button onclick="formatar('insertOrderedList')" title="Lista numerada">1. Lista</button>
+      <select onchange="mudarTamanho(this.value); this.value='';" title="Tamanho da fonte">
+        <option value="">Tamanho</option>
+        <option value="1">Pequeno</option>
+        <option value="3">Normal</option>
+        <option value="5">Grande</option>
+        <option value="7">Enorme</option>
+      </select>
+      <select onchange="formatar('fontName', this.value); this.value='';" title="Fonte">
+        <option value="">Fonte</option>
+        <option value="'Courier New', monospace">Monospace</option>
+        <option value="Georgia, serif">Georgia</option>
+        <option value="Arial, sans-serif">Arial</option>
+        <option value="'Times New Roman', serif">Times New Roman</option>
+      </select>
+      <input type="color" id="corTexto" title="Cor do texto" onchange="mudarCor(this.value)">
+      <label class="toolbar-file-label" title="Inserir imagem">
+        &#128247; Imagem
+        <input type="file" accept="image/*" onchange="uploadImagem(event)">
+      </label>
+      <button onclick="limparFormatacao()" title="Limpar formatação">&#10006; Limpar</button>
+    </div>
+
+    <!-- EDITOR -->
+    <div id="conteudo" contenteditable="true" spellcheck="true"></div>
+
+    <!-- AÇÕES -->
+    <div class="editor-actions">
+      <button class="btn" onclick="publicarPost()">Salvar Post</button>
+      <button class="btn btn-outline" onclick="limparEditor()">Novo Post</button>
+      <span id="editando-badge" class="editing-badge" style="display:none;">Editando post</span>
+    </div>
+
+    <!-- LISTA DE POSTS -->
+    <div class="section-title">Posts Publicados</div>
+    <div id="lista"></div>
+
+  </div>
+</div>
+
+<script src="admin.js"></script>
+</body>
+</html>

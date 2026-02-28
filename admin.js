@@ -2,6 +2,7 @@
 const SENHA_CORRETA = "T9$vQ8#Lm2@Xr5!K";
 
 let posts = JSON.parse(localStorage.getItem("posts")) || [];
+let comentarios = JSON.parse(localStorage.getItem("comentarios")) || {};
 let editando = null;
 
 // ===== LOGIN =====
@@ -281,4 +282,72 @@ function carregarLista() {
   });
 
   container.innerHTML = html;
+  carregarModeracaoComentarios();
+}
+
+// ===== MODERAÇÃO DE COMENTÁRIOS =====
+function carregarModeracaoComentarios() {
+  let container = document.getElementById("moderacao-container");
+  let notificacao = document.getElementById("notificacao-comentarios");
+  let contador = document.getElementById("contador-comentarios");
+  
+  let todosComentarios = [];
+  
+  // Coletar todos os comentários de todos os posts
+  Object.keys(comentarios).forEach((postId) => {
+    if (comentarios[postId] && Array.isArray(comentarios[postId])) {
+      comentarios[postId].forEach((com, idx) => {
+        let postIndex = parseInt(postId);
+        if (posts[postIndex]) {
+          todosComentarios.push({
+            postId: postIndex,
+            postTitulo: posts[postIndex].titulo,
+            comentarioIdx: idx,
+            ...com
+          });
+        }
+      });
+    }
+  });
+  
+  if (todosComentarios.length === 0) {
+    container.innerHTML = `<div class="empty-moderacao">Nenhum comentário para moderar</div>`;
+    notificacao.style.display = "none";
+    return;
+  }
+  
+  // Mostrar notificação
+  notificacao.style.display = "block";
+  contador.textContent = todosComentarios.length;
+  
+  let html = "";
+  todosComentarios.forEach((com) => {
+    html += `
+      <div class="moderacao-item">
+        <div class="moderacao-header">
+          <div class="moderacao-info">
+            <div class="moderacao-post-title">Post: ${com.postTitulo}</div>
+            <div class="moderacao-autor">Por: <strong>${com.autor}</strong> (${com.email})</div>
+            <div class="moderacao-data">${com.data}</div>
+          </div>
+        </div>
+        <div class="moderacao-conteudo">${com.texto}</div>
+        <div class="moderacao-acoes">
+          <button class="btn-rejeitar" onclick="excluirComentario(${com.postId}, ${com.comentarioIdx})">Excluir</button>
+        </div>
+      </div>
+    `;
+  });
+  
+  container.innerHTML = html;
+}
+
+function excluirComentario(postId, comentarioIdx) {
+  if (!confirm("Tem certeza que deseja excluir este comentário?")) return;
+  
+  if (comentarios[postId] && comentarios[postId][comentarioIdx]) {
+    comentarios[postId].splice(comentarioIdx, 1);
+    localStorage.setItem("comentarios", JSON.stringify(comentarios));
+    carregarModeracaoComentarios();
+  }
 }

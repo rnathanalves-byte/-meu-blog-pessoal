@@ -11,6 +11,42 @@ function stripHtml(html) {
   return tmp.textContent || tmp.innerText || "";
 }
 
+function gerarLinkCompartilhamento() {
+  return window.location.href;
+}
+
+function compartilharWhatsApp() {
+  let titulo = post.titulo;
+  let link = gerarLinkCompartilhamento();
+  let mensagem = encodeURIComponent(`Confira este post: "${titulo}" ${link}`);
+  window.open(`https://wa.me/?text=${mensagem}`, '_blank');
+}
+
+function compartilharFacebook() {
+  let link = gerarLinkCompartilhamento();
+  window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(link)}`, '_blank');
+}
+
+function compartilharInstagram() {
+  let link = gerarLinkCompartilhamento();
+  copiarLink(link);
+}
+
+function copiarLink(link) {
+  navigator.clipboard.writeText(link).then(() => {
+    let feedback = document.createElement('div');
+    feedback.className = 'copy-feedback';
+    feedback.textContent = '✓ Link copiado! Cole nos Stories ou Bio do Instagram';
+    document.body.appendChild(feedback);
+    
+    setTimeout(() => {
+      feedback.remove();
+    }, 3000);
+  }).catch(() => {
+    alert('Não foi possível copiar. Tente novamente.');
+  });
+}
+
 function renderizarComentarios() {
   let container = document.getElementById("comentarios-container");
   if (!container) return;
@@ -45,6 +81,7 @@ function renderizarComentarios() {
         <div class="comentario-header">
           <strong>${com.autor}</strong>
           <span class="comentario-data">${com.data}</span>
+          <button class="btn-responder" style="margin-left:auto;" onclick="excluirComentarioLeitor(${idx})">Excluir</button>
         </div>
         <div class="comentario-texto">${com.texto}</div>
         ${respostasHtml}
@@ -70,6 +107,16 @@ function mostrarFormResposta(idx) {
 
 function ocultarFormResposta(idx) {
   document.getElementById(`form-resposta-${idx}`).style.display = "none";
+}
+
+function excluirComentarioLeitor(idx) {
+  if (!confirm("Tem certeza que deseja excluir seu comentário?")) return;
+  
+  if (comentarios[id] && comentarios[id][idx]) {
+    comentarios[id].splice(idx, 1);
+    localStorage.setItem("comentarios", JSON.stringify(comentarios));
+    renderizarComentarios();
+  }
 }
 
 function enviarResposta(postId, comentarioIdx) {
@@ -144,6 +191,24 @@ if (post) {
       <h1>${post.titulo}</h1>
       <div class="post-meta">${post.data}</div>
       <div class="post-content">${post.conteudo}</div>
+      
+      <div class="share-section">
+        <span class="share-label">Compartilhe este post:</span>
+        <div class="share-buttons">
+          <button class="share-btn whatsapp" onclick="compartilharWhatsApp()">
+            <span class="share-icon">💬</span> WhatsApp
+          </button>
+          <button class="share-btn facebook" onclick="compartilharFacebook()">
+            <span class="share-icon">f</span> Facebook
+          </button>
+          <button class="share-btn instagram" onclick="compartilharInstagram()">
+            <span class="share-icon">📷</span> Instagram
+          </button>
+          <button class="share-btn copy-link" onclick="copiarLink(gerarLinkCompartilhamento())">
+            <span class="share-icon">🔗</span> Copiar Link
+          </button>
+        </div>
+      </div>
       
       <hr style="margin:40px 0; border:none; border-top:1px solid #ddd;">
       

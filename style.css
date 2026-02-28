@@ -981,3 +981,246 @@ footer {
     grid-template-columns: 1fr;
   }
 }
+
+
+/* ===== BOTÕES DE COMPARTILHAMENTO SOCIAL ===== */
+.share-section {
+  margin-top: 40px;
+  padding-top: 40px;
+  border-top: 2px solid var(--border);
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.share-label {
+  font-size: 0.85rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  font-weight: bold;
+}
+
+.share-buttons {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.share-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px 16px;
+  font-family: var(--font);
+  font-size: 0.85rem;
+  border: 2px solid;
+  border-radius: var(--radius);
+  cursor: pointer;
+  transition: all 0.2s;
+  text-decoration: none;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  font-weight: bold;
+}
+
+.share-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+/* WhatsApp */
+.share-btn.whatsapp {
+  background: #25D366;
+  color: #fff;
+  border-color: #25D366;
+}
+
+.share-btn.whatsapp:hover {
+  background: #1fbb54;
+  border-color: #1fbb54;
+}
+
+/* Facebook */
+.share-btn.facebook {
+  background: #1877F2;
+  color: #fff;
+  border-color: #1877F2;
+}
+
+.share-btn.facebook:hover {
+  background: #0a66c2;
+  border-color: #0a66c2;
+}
+
+/* Instagram */
+.share-btn.instagram {
+  background: linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%);
+  color: #fff;
+  border-color: transparent;
+}
+
+.share-btn.instagram:hover {
+  opacity: 0.9;
+}
+
+/* Copiar Link */
+.share-btn.copy-link {
+  background: var(--accent);
+  color: #fff;
+  border-color: var(--accent);
+}
+
+.share-btn.copy-link:hover {
+  background: transparent;
+  color: var(--accent);
+}
+
+.share-icon {
+  font-size: 1.1rem;
+}
+
+.copy-feedback {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  background: #27ae60;
+  color: #fff;
+  padding: 14px 20px;
+  border-radius: var(--radius);
+  font-size: 0.9rem;
+  box-shadow: var(--shadow-md);
+  animation: slideIn 0.3s ease-out;
+  z-index: 1000;
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateX(400px);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@media (max-width: 600px) {
+  .share-section {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  
+  .share-buttons {
+    width: 100%;
+  }
+  
+  .share-btn {
+    flex: 1;
+    min-width: 120px;
+  }
+}
+
+
+/* ===== MODERAÇÃO DE COMENTÁRIOS ===== */
+.moderacao-item {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 16px;
+  margin-bottom: 12px;
+}
+
+.moderacao-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+  margin-bottom: 12px;
+  flex-wrap: wrap;
+}
+
+.moderacao-info {
+  flex: 1;
+}
+
+.moderacao-post-title {
+  font-size: 0.9rem;
+  font-weight: bold;
+  color: var(--text);
+  margin-bottom: 4px;
+}
+
+.moderacao-autor {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  margin-bottom: 4px;
+}
+
+.moderacao-data {
+  font-size: 0.75rem;
+  color: #999;
+}
+
+.moderacao-conteudo {
+  background: var(--bg);
+  padding: 12px;
+  border-radius: var(--radius);
+  margin-bottom: 12px;
+  font-size: 0.92rem;
+  line-height: 1.6;
+  color: #333;
+}
+
+.moderacao-acoes {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.btn-aprovar {
+  padding: 6px 12px;
+  font-size: 0.78rem;
+  background: #27ae60;
+  color: #fff;
+  border: 1px solid #27ae60;
+  border-radius: var(--radius);
+  cursor: pointer;
+  transition: all 0.2s;
+  font-family: var(--font);
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+}
+
+.btn-aprovar:hover {
+  background: #229954;
+  border-color: #229954;
+}
+
+.btn-rejeitar {
+  padding: 6px 12px;
+  font-size: 0.78rem;
+  background: #c0392b;
+  color: #fff;
+  border: 1px solid #c0392b;
+  border-radius: var(--radius);
+  cursor: pointer;
+  transition: all 0.2s;
+  font-family: var(--font);
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+}
+
+.btn-rejeitar:hover {
+  background: #a93226;
+  border-color: #a93226;
+}
+
+.empty-moderacao {
+  text-align: center;
+  padding: 40px 20px;
+  color: var(--text-muted);
+  font-size: 0.9rem;
+}

@@ -26,8 +26,14 @@
   <header>
     <div class="container" style="max-width:900px;">
       <h1><a href="index.html" style="color:inherit; text-decoration:none;">Meu Blog</a></h1>
-      <nav>
+      <nav style="display:flex; align-items:center; gap:20px;">
         <a href="index.html">Ver Blog</a>
+        <div style="position:relative;">
+          <button id="notif-bell" style="background:none; border:none; font-size:1.5rem; cursor:pointer; position:relative;" title="Notificações">
+            🔔
+            <span id="notif-badge" style="position:absolute; top:-8px; right:-8px; background:#c0392b; color:white; border-radius:50%; width:20px; height:20px; display:flex; align-items:center; justify-content:center; font-size:0.75rem; font-weight:bold; display:none;">0</span>
+          </button>
+        </div>
         <a href="#" onclick="sair(); return false;">Sair</a>
       </nav>
     </div>
@@ -35,6 +41,13 @@
 
   <div class="admin-panel">
     <h1 id="painel-titulo">Painel do Autor</h1>
+    
+    <!-- NOTIFICAÇÕES -->
+    <div id="notif-panel" style="display:none; background:#fff3cd; border:2px solid #ffc107; padding:16px; border-radius:4px; margin-bottom:20px;">
+      <strong>🔔 Novos comentários!</strong>
+      <p id="notif-text" style="margin:8px 0 0 0; font-size:0.9rem;"></p>
+      <button onclick="document.getElementById('notif-panel').style.display='none';" style="margin-top:8px; padding:6px 12px; background:#ffc107; border:none; border-radius:3px; cursor:pointer; font-weight:bold;">Fechar</button>
+    </div>
 
     <!-- FORMULÁRIO -->
     <div class="form-group">
@@ -83,8 +96,14 @@
     </div>
 
     <!-- LISTA DE POSTS -->
-    <div class="section-title">Posts Publicados</div>
+    <div class="section-title">Posts Publicados <span id="metricas-toggle" style="font-size:0.8rem; cursor:pointer; color:#2a2a2a; margin-left:10px;">[Mostrar Métricas]</span></div>
     <div id="lista"></div>
+    
+    <!-- MÉTRICAS DE POSTS -->
+    <div id="metricas-container" style="display:none; margin-top:20px;">
+      <h3 style="margin-bottom:16px;">Desempenho dos Posts</h3>
+      <div id="metricas-lista"></div>
+    </div>
 
     <!-- MODERAÇÃO DE COMENTÁRIOS -->
     <div class="section-title">Moderação de Comentários</div>
@@ -95,6 +114,11 @@
 
   </div>
 </div>
+
+<!-- Firebase SDK -->
+<script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-storage.js"></script>
 
 <script src="admin.js"></script>
 </body>

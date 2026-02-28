@@ -1,8 +1,22 @@
+// ===== CONFIGURAÇÃO FIREBASE =====
+const firebaseConfig = {
+  apiKey: "AIzaSyBclnyLKhMWoeviT7xRB1QM0iNCUmGaOsY",
+  authDomain: "meu-blog-nathan.firebaseapp.com",
+  projectId: "meu-blog-nathan",
+  storageBucket: "meu-blog-nathan.firebasestorage.app",
+  messagingSenderId: "27310750879",
+  appId: "1:27310750879:web:f6aeae60ed7425def5b6aa"
+};
+
+// Inicializar Firebase
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
+
 // ===== CONFIGURAÇÃO =====
 const SENHA_CORRETA = "T9$vQ8#Lm2@Xr5!K";
 
-let posts = JSON.parse(localStorage.getItem("posts")) || [];
-let comentarios = JSON.parse(localStorage.getItem("comentarios")) || {};
+let posts = [];
+let comentarios = {};
 let editando = null;
 
 // ===== LOGIN =====
@@ -33,11 +47,6 @@ function sair() {
   document.getElementById("painel").style.display = "none";
   document.getElementById("login").style.display = "block";
   document.getElementById("senha").value = "";
-}
-
-// ===== LOCALSTORAGE =====
-function salvar() {
-  localStorage.setItem("posts", JSON.stringify(posts));
 }
 
 // ===== FORMATAÇÃO =====
@@ -73,7 +82,6 @@ function uploadImagem(event) {
   };
   reader.readAsDataURL(file);
 
-  // Limpar o input para permitir re-upload do mesmo arquivo
   event.target.value = "";
 }
 
@@ -81,19 +89,16 @@ function inserirImagemRedimensionavel(src) {
   let editor = document.getElementById("conteudo");
   editor.focus();
 
-  // Criar wrapper
   let wrapper = document.createElement("div");
   wrapper.className = "img-wrapper";
   wrapper.contentEditable = "false";
 
-  // Criar imagem
   let img = document.createElement("img");
   img.src = src;
   img.style.width = "240px";
   img.style.height = "auto";
   img.draggable = false;
 
-  // Botão de deletar
   let deleteBtn = document.createElement("span");
   deleteBtn.className = "delete-btn";
   deleteBtn.innerHTML = "&times;";
@@ -104,12 +109,10 @@ function inserirImagemRedimensionavel(src) {
     wrapper.remove();
   });
 
-  // Handle de redimensionamento
   let handle = document.createElement("span");
   handle.className = "resize-handle";
   handle.title = "Arraste para redimensionar";
 
-  // ===== LÓGICA DE REDIMENSIONAMENTO CORRIGIDA =====
   let isResizing = false;
   let startX, startY, startWidth, startHeight;
 
@@ -123,19 +126,16 @@ function inserirImagemRedimensionavel(src) {
     startWidth = img.offsetWidth;
     startHeight = img.offsetHeight;
 
-    // Cursor global durante o resize
     document.body.style.cursor = "nwse-resize";
     document.body.style.userSelect = "none";
   });
 
-  // Usar listeners no documento para capturar movimento fora do elemento
   document.addEventListener("mousemove", function onMouseMove(e) {
     if (!isResizing) return;
 
     let dx = e.clientX - startX;
     let novaLargura = Math.max(60, startWidth + dx);
 
-    // Manter proporção
     let proporcao = startHeight / startWidth;
     let novaAltura = novaLargura * proporcao;
 
@@ -150,7 +150,6 @@ function inserirImagemRedimensionavel(src) {
     document.body.style.userSelect = "";
   });
 
-  // ===== TOUCH SUPPORT (mobile) =====
   handle.addEventListener("touchstart", function (e) {
     e.preventDefault();
     isResizing = true;
@@ -179,15 +178,12 @@ function inserirImagemRedimensionavel(src) {
   wrapper.appendChild(deleteBtn);
   wrapper.appendChild(handle);
 
-  // Inserir no editor na posição do cursor
   let selection = window.getSelection();
   if (selection && selection.rangeCount > 0) {
     let range = selection.getRangeAt(0);
-    // Verificar se o range está dentro do editor
     if (editor.contains(range.commonAncestorContainer)) {
       range.deleteContents();
       range.insertNode(wrapper);
-      // Mover cursor após a imagem
       range.setStartAfter(wrapper);
       range.collapse(true);
       selection.removeAllRanges();
@@ -195,12 +191,11 @@ function inserirImagemRedimensionavel(src) {
       return;
     }
   }
-  // Fallback: adicionar ao final
   editor.appendChild(wrapper);
 }
 
 // ===== PUBLICAR POST =====
-function publicarPost() {
+async function publicarPost() {
   let titulo = document.getElementById("titulo").value.trim();
   let conteudo = document.getElementById("conteudo").innerHTML.trim();
 
@@ -214,17 +209,30 @@ function publicarPost() {
     hour: "2-digit", minute: "2-digit"
   });
 
-  if (editando !== null) {
-    posts[editando].titulo = titulo;
-    posts[editando].conteudo = conteudo;
-    posts[editando].editadoEm = data;
-  } else {
-    posts.push({ titulo, conteudo, data });
+  try {
+    if (editando !== null) {
+      // Editar post existente
+      await db.collection("posts").doc(posts[editando].id).update({
+        titulo: titulo,
+        conteudo: conteudo,
+        editadoEm: data
+      });
+    } else {
+      // Criar novo post
+      await db.collection("posts").add({
+        titulo: titulo,
+        conteudo: conteudo,
+        data: data,
+        editadoEm: null
+      });
+    }
+    
+    limparEditor();
+    carregarLista();
+  } catch (error) {
+    console.error("Erro ao salvar post:", error);
+    alert("Erro ao salvar o post. Tente novamente.");
   }
-
-  salvar();
-  limparEditor();
-  carregarLista();
 }
 
 // ===== EDITAR POST =====
@@ -237,12 +245,17 @@ function editarPost(index) {
 }
 
 // ===== EXCLUIR POST =====
-function excluirPost(index) {
+async function excluirPost(index) {
   if (!confirm(`Excluir o post "${posts[index].titulo}"? Esta ação não pode ser desfeita.`)) return;
-  posts.splice(index, 1);
-  salvar();
-  if (editando === index) limparEditor();
-  carregarLista();
+  
+  try {
+    await db.collection("posts").doc(posts[index].id).delete();
+    if (editando === index) limparEditor();
+    carregarLista();
+  } catch (error) {
+    console.error("Erro ao excluir post:", error);
+    alert("Erro ao excluir o post.");
+  }
 }
 
 // ===== LIMPAR EDITOR =====
@@ -255,99 +268,106 @@ function limparEditor() {
 
 // ===== CARREGAR LISTA =====
 function carregarLista() {
-  let container = document.getElementById("lista");
+  db.collection("posts").orderBy("data", "desc").onSnapshot((snapshot) => {
+    posts = [];
+    snapshot.forEach((doc) => {
+      posts.push({
+        id: doc.id,
+        ...doc.data()
+      });
+    });
 
-  if (posts.length === 0) {
-    container.innerHTML = `<p style="color:#999; font-size:0.88rem; padding:12px 0;">Nenhum post publicado ainda.</p>`;
-    return;
-  }
+    let container = document.getElementById("lista");
 
-  let html = "";
-  // Mostrar do mais recente ao mais antigo
-  [...posts].reverse().forEach((post, i) => {
-    let indexOriginal = posts.length - 1 - i;
-    html += `
-      <div class="admin-post-item">
-        <div>
-          <h3>${post.titulo}</h3>
-          <div class="post-meta">${post.data}${post.editadoEm ? ' &middot; Editado em ' + post.editadoEm : ''}</div>
+    if (posts.length === 0) {
+      container.innerHTML = `<p style="color:#999; font-size:0.88rem; padding:12px 0;">Nenhum post publicado ainda.</p>`;
+      carregarModeracaoComentarios();
+      return;
+    }
+
+    let html = "";
+    posts.forEach((post, index) => {
+      html += `
+        <div class="admin-post-item">
+          <div>
+            <h3>${post.titulo}</h3>
+            <div class="post-meta">${post.data}${post.editadoEm ? ' &middot; Editado em ' + post.editadoEm : ''}</div>
+          </div>
+          <div class="admin-post-actions">
+            <a href="post.html?id=${post.id}" target="_blank" class="btn btn-outline btn-sm">Ver</a>
+            <button class="btn btn-outline btn-sm" onclick="editarPost(${index})">Editar</button>
+            <button class="btn btn-danger btn-sm" onclick="excluirPost(${index})">Excluir</button>
+          </div>
         </div>
-        <div class="admin-post-actions">
-          <a href="post.html?id=${indexOriginal}" target="_blank" class="btn btn-outline btn-sm">Ver</a>
-          <button class="btn btn-outline btn-sm" onclick="editarPost(${indexOriginal})">Editar</button>
-          <button class="btn btn-danger btn-sm" onclick="excluirPost(${indexOriginal})">Excluir</button>
-        </div>
-      </div>
-    `;
+      `;
+    });
+
+    container.innerHTML = html;
+    carregarModeracaoComentarios();
   });
-
-  container.innerHTML = html;
-  carregarModeracaoComentarios();
 }
 
 // ===== MODERAÇÃO DE COMENTÁRIOS =====
 function carregarModeracaoComentarios() {
-  let container = document.getElementById("moderacao-container");
-  let notificacao = document.getElementById("notificacao-comentarios");
-  let contador = document.getElementById("contador-comentarios");
-  
-  let todosComentarios = [];
-  
-  // Coletar todos os comentários de todos os posts
-  Object.keys(comentarios).forEach((postId) => {
-    if (comentarios[postId] && Array.isArray(comentarios[postId])) {
-      comentarios[postId].forEach((com, idx) => {
-        let postIndex = parseInt(postId);
-        if (posts[postIndex]) {
-          todosComentarios.push({
-            postId: postIndex,
-            postTitulo: posts[postIndex].titulo,
-            comentarioIdx: idx,
-            ...com
-          });
-        }
-      });
+  db.collection("comentarios").onSnapshot((snapshot) => {
+    let container = document.getElementById("moderacao-container");
+    let notificacao = document.getElementById("notificacao-comentarios");
+    let contador = document.getElementById("contador-comentarios");
+    
+    let todosComentarios = [];
+    
+    snapshot.forEach((doc) => {
+      let comentario = doc.data();
+      let postIndex = posts.findIndex(p => p.id === comentario.postId);
+      
+      if (postIndex !== -1) {
+        todosComentarios.push({
+          docId: doc.id,
+          postTitulo: posts[postIndex].titulo,
+          ...comentario
+        });
+      }
+    });
+    
+    if (todosComentarios.length === 0) {
+      container.innerHTML = `<div class="empty-moderacao">Nenhum comentário para moderar</div>`;
+      notificacao.style.display = "none";
+      return;
     }
-  });
-  
-  if (todosComentarios.length === 0) {
-    container.innerHTML = `<div class="empty-moderacao">Nenhum comentário para moderar</div>`;
-    notificacao.style.display = "none";
-    return;
-  }
-  
-  // Mostrar notificação
-  notificacao.style.display = "block";
-  contador.textContent = todosComentarios.length;
-  
-  let html = "";
-  todosComentarios.forEach((com) => {
-    html += `
-      <div class="moderacao-item">
-        <div class="moderacao-header">
-          <div class="moderacao-info">
-            <div class="moderacao-post-title">Post: ${com.postTitulo}</div>
-            <div class="moderacao-autor">Por: <strong>${com.autor}</strong> (${com.email})</div>
-            <div class="moderacao-data">${com.data}</div>
+    
+    notificacao.style.display = "block";
+    contador.textContent = todosComentarios.length;
+    
+    let html = "";
+    todosComentarios.forEach((com) => {
+      html += `
+        <div class="moderacao-item">
+          <div class="moderacao-header">
+            <div class="moderacao-info">
+              <div class="moderacao-post-title">Post: ${com.postTitulo}</div>
+              <div class="moderacao-autor">Por: <strong>${com.autor}</strong> (${com.email})</div>
+              <div class="moderacao-data">${com.data}</div>
+            </div>
+          </div>
+          <div class="moderacao-conteudo">${com.texto}</div>
+          <div class="moderacao-acoes">
+            <button class="btn-rejeitar" onclick="excluirComentarioAdmin('${com.docId}')">Excluir</button>
           </div>
         </div>
-        <div class="moderacao-conteudo">${com.texto}</div>
-        <div class="moderacao-acoes">
-          <button class="btn-rejeitar" onclick="excluirComentario(${com.postId}, ${com.comentarioIdx})">Excluir</button>
-        </div>
-      </div>
-    `;
+      `;
+    });
+    
+    container.innerHTML = html;
   });
-  
-  container.innerHTML = html;
 }
 
-function excluirComentario(postId, comentarioIdx) {
+async function excluirComentarioAdmin(docId) {
   if (!confirm("Tem certeza que deseja excluir este comentário?")) return;
   
-  if (comentarios[postId] && comentarios[postId][comentarioIdx]) {
-    comentarios[postId].splice(comentarioIdx, 1);
-    localStorage.setItem("comentarios", JSON.stringify(comentarios));
-    carregarModeracaoComentarios();
+  try {
+    await db.collection("comentarios").doc(docId).delete();
+  } catch (error) {
+    console.error("Erro ao excluir comentário:", error);
+    alert("Erro ao excluir o comentário.");
   }
 }
